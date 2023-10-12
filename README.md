@@ -6,7 +6,7 @@ This project aims to address these limitations by integrating insights from the 
 ["Dataset Cartography: Mapping and Diagnosing Datasets with Training Dynamics"](https://aclanthology.org/2020.emnlp-main.746/)
 into continual learning strategies.
 <br>
-In line with recent findings from the mentioned paper, our approach takes a strategic approach to buffer updates. We
+In line with recent findings from the mentioned paper, our approach takes a strategic approach to update buffer. We
 prioritize samples
 from the "ambiguous region" of the dataset, as they are known to contain challenging examples that offer substantial
 value for model learning. These samples are selected based on their variability and confidence, which are assessed
