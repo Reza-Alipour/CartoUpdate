@@ -1,25 +1,45 @@
-# PCR: Proxy-based Contrastive Replay for Online Class-Incremental Continual Learning
-Code For CVPR'2023 paper "[PCR: Proxy-based Contrastive Replay for Online Class-Incremental Continual Learning](https://arxiv.org/abs/2304.04408)"
+# Continual Learning with Enhanced Buffer Strategies
 
-The framework is based on [online-continual-learning](https://github.com/RaptorMai/online-continual-learning).
-- CIFAR10 & CIFAR100 will be downloaded during the first run. (datasets/cifar10;/datasets/cifar100)
-- Mini-ImageNet: Download from https://www.kaggle.com/whitemoon/miniimagenet/download, and place it in datasets/mini_imagenet/.
+This repository extends the capabilities of continual learning by improving buffer-based strategies. It builds upon a
+foundation of existing algorithms and methods for continual learning while introducing new enhancements.
+This project aims to address these limitations by integrating insights from the paper
+["Dataset Cartography: Mapping and Diagnosing Datasets with Training Dynamics"](https://aclanthology.org/2020.emnlp-main.746/)
+into continual learning strategies.
+<br>
+In line with recent findings from the mentioned paper, our approach takes a strategic approach to buffer updates. We
+prioritize samples
+from the "ambiguous region" of the dataset, as they are known to contain challenging examples that offer substantial
+value for model learning. These samples are selected based on their variability and confidence, which are assessed
+during different training epochs.
+We implement this method for two buffer-based strategies: PCR and SCR.
 
-PCR is in [https://github.com/FelixHuiweiLin/PCR/blob/main/agents/pcr.py](https://github.com/FelixHuiweiLin/PCR/blob/main/agents/pcr.py).
+![Dataset Regions](assets/img.png)
+
+In the image above, you can see the different regions within a dataset.
+<br>_This picture is taken from the
+paper ["Dataset Cartography: Mapping and Diagnosing Datasets with Training Dynamics"](https://aclanthology.org/2020.emnlp-main.746/)._
+
+## Examples
+
+Here's a simple example of how to use the PCR method:
+
+### CIFAR-10
+
+```shell
+# Update buffer randomly
+python general_main.py --num_tasks 5 --data cifar10 --cl_type nc --agent PCR --retrieve random --update random --mem_size 200 --seed 1000 --epoch 6 --batch 24 --eps_mem_batch 16
+
+# Update buffer with cartography plugin
+python general_main.py --num_tasks 5 --data cifar10 --cl_type nc --agent PCR --retrieve random --update Carto --mem_size 200 --seed 1000 --epoch 6 --batch 24 --eps_mem_batch 16
+```
 
 ### CIFAR-100
-```shell
-  python general_main.py --num_runs 1 --data  cifar100 --cl_type nc --agent PCR  --retrieve random --update random --mem_size 1000
- ```
 
- ### CIFAR-10
 ```shell
-  python general_main.py --num_runs 1 --data cifar10 --cl_type nc --agent PCR --retrieve random --update random --mem_size 200
- ```
- 
- ### Mini-Imagenet
-```shell
-python general_main.py --data --num_runs 1  mini_imagenet --cl_type nc --agent PCR --retrieve random --update random --mem_size 1000
- ```
+# Update buffer randomly
+python general_main.py --num_tasks 10 --data cifar100 --cl_type nc --agent PCR --retrieve random --update random --mem_size 200 --seed 1000 --epoch 6 --batch 24 --eps_mem_batch 16
 
+# Update buffer with cartography plugin
+python general_main.py --num_tasks 10 --data cifar100 --cl_type nc --agent PCR --retrieve random --update Carto --mem_size 200 --seed 1000 --epoch 6 --batch 24 --eps_mem_batch 16
 
+```
