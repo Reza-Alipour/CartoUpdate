@@ -50,7 +50,7 @@ if __name__ == "__main__":
     parser.add_argument('--agent', dest='agent', default='PCR',
                         choices=['ER', 'PCR', 'EWC', 'AGEM', 'CNDPM', 'LWF', 'ICARL', 'GDUMB', 'ASER', 'SCR'],
                         help='Agent selection  (default: %(default)s)')
-    parser.add_argument('--update', dest='update', default='random', choices=['random', 'GSS', 'ASER'],
+    parser.add_argument('--update', dest='update', default='random', choices=['random', 'GSS', 'ASER', 'Carto'],
                         help='Update method  (default: %(default)s)')
     parser.add_argument('--retrieve', dest='retrieve', default='random', choices=['MIR', 'random', 'ASER', 'match', 'mem_match'],
                         help='Retrieve method  (default: %(default)s)')
