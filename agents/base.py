@@ -2,8 +2,9 @@ import abc
 import copy
 import pickle
 from abc import abstractmethod
-from dataclasses import dataclass
-from typing import Union, List
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import List
 
 import numpy as np
 import torch
@@ -43,6 +44,7 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
         self.bias_norm_old = []
         self.lbl_inv_map = {}
         self.class_task_map = {}
+        self.carto_data = defaultdict(lambda: defaultdict(lambda: SampleData()))
 
     def before_train(self, x_train, y_train):
         new_labels = list(set(y_train.tolist()))
@@ -243,3 +245,24 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
             with open('confusion', 'wb') as fp:
                 pickle.dump([correct_lb, predict_lb], fp)
         return acc_array
+
+
+@dataclass
+class SampleData:
+    _confidence: float = field(default=None)
+    _variability: float = field(default=None)
+    label: int = field(default=None)
+    index: int = field(default=0)
+    probabilities: List[float] = field(default_factory=lambda: list())
+    experience: int = field(default=0)
+    buffer_index: int = field(default=0)
+
+    def get_confidence(self):
+        if self._confidence is None:
+            self._confidence = float(np.mean(self.probabilities))
+        return self._confidence
+
+    def get_variability(self):
+        if self._variability is None:
+            self._variability = float(np.std(self.probabilities))
+        return self._variability
