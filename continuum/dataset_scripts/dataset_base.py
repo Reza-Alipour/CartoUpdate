@@ -10,6 +10,7 @@ class DatasetBase(ABC):
         self.task_nums = task_nums
         self.run = run
         self.root = os.path.join('./datasets', self.dataset)
+        # self.root = os.path.join('/home/ices/linhuiwei/pyprojects/online-continual-learning/datasets', self.dataset)
         self.test_set = []
         self.val_set = []
         self._is_properly_setup()

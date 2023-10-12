@@ -46,8 +46,8 @@ if __name__ == "__main__":
                         help='Store result or not (default: %(default)s)')
     parser.add_argument('--save-path', dest='save_path', default=None)
 
-    ########################Agent#########################
-    parser.add_argument('--agent', dest='agent', default='ER',
+    ########################Agent#########f################
+    parser.add_argument('--agent', dest='agent', default='PCR',
                         choices=['ER', 'EWC', 'AGEM', 'CNDPM', 'LWF', 'ICARL', 'GDUMB', 'ASER', 'SCR'],
                         help='Agent selection  (default: %(default)s)')
     parser.add_argument('--update', dest='update', default='random', choices=['random', 'GSS', 'ASER'],
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     parser.add_argument('--plot_sample', dest='plot_sample', default=False,
                         type=boolean_string,
                         help='In NI scenario, should sample images be plotted (default: %(default)s)')
-    parser.add_argument('--data', dest='data', default="cifar10",
+    parser.add_argument('--data', dest='data', default="cifar100",
                         help='Path to the dataset. (default: %(default)s)')
     parser.add_argument('--cl_type', dest='cl_type', default="nc", choices=['nc', 'ni'],
                         help='Continual learning type: new class "nc" or new instance "ni". (default: %(default)s)')
@@ -99,7 +99,7 @@ if __name__ == "__main__":
                         help='If False, offline training will be performed (default: %(default)s)')
 
     ########################ER#########################
-    parser.add_argument('--mem_size', dest='mem_size', default=10000,
+    parser.add_argument('--mem_size', dest='mem_size', default=1000,
                         type=int,
                         help='Memory buffer size (default: %(default)s)')
     parser.add_argument('--eps_mem_batch', dest='eps_mem_batch', default=10,
