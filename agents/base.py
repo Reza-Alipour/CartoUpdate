@@ -1,14 +1,18 @@
-from abc import abstractmethod
 import abc
+import copy
+import pickle
+from abc import abstractmethod
+from dataclasses import dataclass
+from typing import Union, List
+
 import numpy as np
 import torch
 from torch.nn import functional as F
-from utils.kd_manager import KdManager
-from utils.utils import maybe_cuda, AverageMeter
 from torch.utils.data import TensorDataset, DataLoader
-import copy
+
+from utils.kd_manager import KdManager
 from utils.loss import SupConLoss
-import pickle
+from utils.utils import maybe_cuda, AverageMeter
 
 
 class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
@@ -54,7 +58,7 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
         pass
 
     def after_train(self):
-        #self.old_labels = list(set(self.old_labels + self.new_labels))
+        # self.old_labels = list(set(self.old_labels + self.new_labels))
         self.old_labels += self.new_labels
         self.new_labels_zombie = copy.deepcopy(self.new_labels)
         self.new_labels.clear()
@@ -77,12 +81,12 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                         logits = self.model.forward(batch_x)
                         if self.params.agent == 'SCR':
                             logits = torch.cat([self.model.forward(batch_x).unsqueeze(1),
-                                                  self.model.forward(self.transform(batch_x)).unsqueeze(1)], dim=1)
+                                                self.model.forward(self.transform(batch_x)).unsqueeze(1)], dim=1)
                         loss = self.criterion(logits, batch_y)
                         self.opt.zero_grad()
                         loss.backward()
                         params = [p for p in self.model.parameters() if p.requires_grad and p.grad is not None]
-                        grad = [p.grad.clone()/10. for p in params]
+                        grad = [p.grad.clone() / 10. for p in params]
                         for g, p in zip(grad, params):
                             p.grad.data.copy_(g)
                         self.opt.step()
@@ -133,7 +137,8 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                     feature.data = feature.data / feature.data.norm()  # Normalize
                     features.append(feature)
                 if len(features) == 0:
-                    mu_y = maybe_cuda(torch.normal(0, 1, size=tuple(self.model.features(x.unsqueeze(0)).detach().size())), self.cuda)
+                    mu_y = maybe_cuda(
+                        torch.normal(0, 1, size=tuple(self.model.features(x.unsqueeze(0)).detach().size())), self.cuda)
                     mu_y = mu_y.squeeze()
                 else:
                     features = torch.stack(features)
@@ -161,9 +166,10 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                         for j in range(feature.size(0)):  # Normalize
                             feature.data[j] = feature.data[j] / feature.data[j].norm()
                         feature = feature.unsqueeze(2)  # (batch_size, feature_size, 1)
-                        means = torch.stack([exemplar_means[cls] for cls in self.old_labels])  # (n_classes, feature_size)
+                        means = torch.stack(
+                            [exemplar_means[cls] for cls in self.old_labels])  # (n_classes, feature_size)
 
-                        #old ncm
+                        # old ncm
                         means = torch.stack([means] * batch_x.size(0))  # (batch_size, n_classes, feature_size)
                         means = means.transpose(1, 2)
                         feature = feature.expand_as(means)  # (batch_size, feature_size, n_classes)
@@ -174,7 +180,7 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                         # _, preds = torch.matmul(means, feature).max(0)
                         correct_cnt = (np.array(self.old_labels)[
                                            pred_label.tolist()] == batch_y.cpu().numpy()).sum().item() / batch_y.size(0)
-                    elif self.params.agent=='PCR':
+                    elif self.params.agent == 'PCR':
                         logits, _ = self.model.pcrForward(batch_x)
                         # mask = torch.zeros_like(logits)
                         # mask[:, self.old_labels] = 1
@@ -184,13 +190,13 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                     else:
                         logits = self.model.forward(batch_x)
                         _, pred_label = torch.max(logits, 1)
-                        correct_cnt = (pred_label == batch_y).sum().item()/batch_y.size(0)
+                        correct_cnt = (pred_label == batch_y).sum().item() / batch_y.size(0)
 
                     if self.params.error_analysis:
                         correct_lb += [task] * len(batch_y)
                         for i in pred_label:
                             predict_lb.append(self.class_task_map[i.item()])
-                        if task < self.task_seen-1:
+                        if task < self.task_seen - 1:
                             # old test
                             total = (pred_label != batch_y).sum().item()
                             wrong = pred_label[pred_label != batch_y]
@@ -198,13 +204,16 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                             on_tmp = sum([(wrong == i).sum().item() for i in self.new_labels_zombie])
                             oo += total - on_tmp
                             on += on_tmp
-                            old_class_score.update(logits[:, list(set(self.old_labels) - set(self.new_labels_zombie))].mean().item(), batch_y.size(0))
-                        elif task == self.task_seen -1:
+                            old_class_score.update(
+                                logits[:, list(set(self.old_labels) - set(self.new_labels_zombie))].mean().item(),
+                                batch_y.size(0))
+                        elif task == self.task_seen - 1:
                             # new test
                             total = (pred_label != batch_y).sum().item()
                             error += total
                             wrong = pred_label[pred_label != batch_y]
-                            no_tmp = sum([(wrong == i).sum().item() for i in list(set(self.old_labels) - set(self.new_labels_zombie))])
+                            no_tmp = sum([(wrong == i).sum().item() for i in
+                                          list(set(self.old_labels) - set(self.new_labels_zombie))])
                             no += no_tmp
                             nn += total - no_tmp
                             new_class_score.update(logits[:, self.new_labels_zombie].mean().item(), batch_y.size(0))
@@ -217,14 +226,16 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
             self.error_list.append((no, nn, oo, on))
             self.new_class_score.append(new_class_score.avg())
             self.old_class_score.append(old_class_score.avg())
-            print("no ratio: {}\non ratio: {}".format(no/(no+nn+0.1), on/(oo+on+0.1)))
+            print("no ratio: {}\non ratio: {}".format(no / (no + nn + 0.1), on / (oo + on + 0.1)))
             print(self.error_list)
             print(self.new_class_score)
             print(self.old_class_score)
             self.fc_norm_new.append(self.model.linear.weight[self.new_labels_zombie].mean().item())
-            self.fc_norm_old.append(self.model.linear.weight[list(set(self.old_labels) - set(self.new_labels_zombie))].mean().item())
+            self.fc_norm_old.append(
+                self.model.linear.weight[list(set(self.old_labels) - set(self.new_labels_zombie))].mean().item())
             self.bias_norm_new.append(self.model.linear.bias[self.new_labels_zombie].mean().item())
-            self.bias_norm_old.append(self.model.linear.bias[list(set(self.old_labels) - set(self.new_labels_zombie))].mean().item())
+            self.bias_norm_old.append(
+                self.model.linear.bias[list(set(self.old_labels) - set(self.new_labels_zombie))].mean().item())
             print(self.fc_norm_old)
             print(self.fc_norm_new)
             print(self.bias_norm_old)
