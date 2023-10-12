@@ -90,6 +90,8 @@ class ProxyContrastiveReplay(ContinualLearner):
                 # update mem
                 if self.buffer.update_method.__class__ is not Carto_update:
                     self.buffer.update(batch_x, batch_y)
+                else:
+                    self.buffer.update(batch_x, batch_y, instant_memory=True)
 
             if self.buffer.update_method.__class__ is Carto_update:
                 self.model = self.model.eval()
