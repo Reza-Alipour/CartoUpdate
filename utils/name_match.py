@@ -1,25 +1,26 @@
+from agents.agem import AGEM
+from agents.cndpm import Cndpm
+from agents.ewc_pp import EWC_pp
+from agents.exp_replay import ExperienceReplay
 from agents.gdumb import Gdumb
-from continuum.dataset_scripts.cifar100 import CIFAR100
+from agents.icarl import Icarl
+from agents.lwf import Lwf
+from agents.pcr import ProxyContrastiveReplay
+from agents.scr import SupContrastReplay
 from continuum.dataset_scripts.cifar10 import CIFAR10
+from continuum.dataset_scripts.cifar100 import CIFAR100
 from continuum.dataset_scripts.core50 import CORE50
 from continuum.dataset_scripts.mini_imagenet import Mini_ImageNet
 from continuum.dataset_scripts.openloris import OpenLORIS
-from agents.exp_replay import ExperienceReplay
-from agents.agem import AGEM
-from agents.ewc_pp import EWC_pp
-from agents.cndpm import Cndpm
-from agents.lwf import Lwf
-from agents.icarl import Icarl
-from agents.scr import SupContrastReplay
-from agents.pcr import ProxyContrastiveReplay
-from utils.buffer.random_retrieve import Random_retrieve
-from utils.buffer.reservoir_update import Reservoir_update
-from utils.buffer.mir_retrieve import MIR_retrieve
-from utils.buffer.gss_greedy_update import GSSGreedyUpdate
 from utils.buffer.aser_retrieve import ASER_retrieve
 from utils.buffer.aser_update import ASER_update
-from utils.buffer.sc_retrieve import Match_retrieve
+from utils.buffer.carto_update import Carto_update
+from utils.buffer.gss_greedy_update import GSSGreedyUpdate
 from utils.buffer.mem_match import MemMatch_retrieve
+from utils.buffer.mir_retrieve import MIR_retrieve
+from utils.buffer.random_retrieve import Random_retrieve
+from utils.buffer.reservoir_update import Reservoir_update
+from utils.buffer.sc_retrieve import Match_retrieve
 
 data_objects = {
     'cifar100': CIFAR100,
@@ -53,6 +54,6 @@ retrieve_methods = {
 update_methods = {
     'random': Reservoir_update,
     'GSS': GSSGreedyUpdate,
-    'ASER': ASER_update
+    'ASER': ASER_update,
+    'Carto': Carto_update
 }
-
