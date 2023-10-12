@@ -27,9 +27,11 @@ class SupContrastReplay(ContinualLearner):
             RandomGrayscale(p=0.2)
 
         )
+        self.classes_seen = set()
 
     def train_learner(self, x_train, y_train):
         self.before_train(x_train, y_train)
+        self.classes_seen = self.classes_seen.union(set(y_train))
         # set up loader
         train_dataset = dataset_transform(x_train, y_train, transform=transforms_match[self.data])
         train_loader = data.DataLoader(train_dataset, batch_size=self.batch, shuffle=True, num_workers=0,
